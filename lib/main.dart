@@ -80,45 +80,51 @@ class _DogBreedsScreenState extends State<DogBreedsScreen> {
           style: TextStyle(color: Colors.white),
         ),
       ),
-      body: GridView.builder(
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: MediaQuery.of(context).size.width > 600 ? 4 : 2,
-          crossAxisSpacing: 10,
-          mainAxisSpacing: 10,
-        ),
-        itemCount: filteredBreeds.length,
-        itemBuilder: (BuildContext context, int index) {
-          return GestureDetector(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) =>
-                      DogImagesScreen(breed: filteredBreeds[index]),
-                ),
-              );
-            },
-            child: Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(10),
+      body: Column(
+        children: [
+          Expanded(
+            child: GridView.builder(
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: MediaQuery.of(context).size.width > 600 ? 4 : 2,
+                crossAxisSpacing: 10,
+                mainAxisSpacing: 10,
               ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  buildDogImageWidget(filteredBreeds[index]),
-                  SizedBox(height: 10),
-                  Text(
-                    filteredBreeds[index],
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
+              itemCount: filteredBreeds.length,
+              itemBuilder: (BuildContext context, int index) {
+                return GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            DogImagesScreen(breed: filteredBreeds[index]),
+                      ),
+                    );
+                  },
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        buildDogImageWidget(filteredBreeds[index]),
+                        SizedBox(height: 10),
+                        Text(
+                          filteredBreeds[index],
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ],
-              ),
+                );
+              },
             ),
-          );
-        },
+          ),
+        ],
       ),
     );
   }
@@ -223,41 +229,48 @@ class _DogImagesScreenState extends State<DogImagesScreen> {
       appBar: AppBar(
         title: Text('Dog Images - ${widget.breed}'),
       ),
-      body: GridView.builder(
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: MediaQuery.of(context).size.width > 600 ? 4 : 2,
-          crossAxisSpacing: 10,
-          mainAxisSpacing: 10,
-        ),
-        itemCount: images.length,
-        itemBuilder: (BuildContext context, int index) {
-          return SingleChildScrollView(
-            child: Column(
-              children: [
-                Image.network(
-                  images[index],
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Column(
-                      children: [
-                        Text('Failed to load image'),
-                        SizedBox(height: 10),
-                      ],
-                    );
-                  },
-                ),
-                SizedBox(height: 10),
-                if (!isImageLoading && !isImageLoadFailed)
-                  ElevatedButton(
-                    onPressed: () {
-                      Share.share(images[index]);
-                    },
-                    child: Text('Share'),
+      body: Column(
+        children: [
+          Expanded(
+            child: GridView.builder(
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: MediaQuery.of(context).size.width > 600 ? 4 : 2,
+                crossAxisSpacing: 10,
+                mainAxisSpacing: 10,
+              ),
+              itemCount: images.length,
+              itemBuilder: (BuildContext context, int index) {
+                return SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      Image.network(
+                        images[index],
+                        fit: BoxFit
+                            .contain, // Set the fit property to BoxFit.contain
+                        errorBuilder: (context, error, stackTrace) {
+                          return Column(
+                            children: [
+                              Text('Failed to load image'),
+                              SizedBox(height: 10),
+                            ],
+                          );
+                        },
+                      ),
+                      SizedBox(height: 10),
+                      if (isImageLoading && !isImageLoadFailed)
+                        ElevatedButton(
+                          onPressed: () {
+                            Share.share(images[index]);
+                          },
+                          child: Text('Share'),
+                        ),
+                    ],
                   ),
-              ],
+                );
+              },
             ),
-          );
-        },
+          ),
+        ],
       ),
     );
   }
