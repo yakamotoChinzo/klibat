@@ -12,7 +12,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Dog API Demo',
+      title: 'Klibat Dog breeds',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
@@ -82,7 +82,7 @@ class _DogBreedsScreenState extends State<DogBreedsScreen> {
       ),
       body: GridView.builder(
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
+          crossAxisCount: MediaQuery.of(context).size.width > 600 ? 4 : 2,
           crossAxisSpacing: 10,
           mainAxisSpacing: 10,
         ),
@@ -133,26 +133,34 @@ class _DogBreedsScreenState extends State<DogBreedsScreen> {
           return Text('Error loading image');
         } else {
           final images = snapshot.data!;
-          String imageUrl = '';
 
           if (images.isNotEmpty) {
-            if (images[0].isNotEmpty) {
-              imageUrl = images[0];
-            } else {
-              final lastIndex = (images.length * (1 - 1 / 2) - 1).toInt();
-              if (images[lastIndex].isNotEmpty) {
-                imageUrl = images[lastIndex];
-              } else {
-                imageUrl = images[images.length - 1];
-              }
-            }
+            return Image.network(
+              images[0],
+              width: 200,
+              height: 200,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                return Image.network(
+                  images[images.length - 1],
+                  width: 200,
+                  height: 200,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Text('Failed to load image');
+                  },
+                );
+              },
+            );
           }
-
           return Image.network(
-            imageUrl,
+            images[0],
             width: 200,
             height: 200,
             fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) {
+              return Text('Failed to load image');
+            },
           );
         }
       },
@@ -183,6 +191,8 @@ class DogImagesScreen extends StatefulWidget {
 
 class _DogImagesScreenState extends State<DogImagesScreen> {
   List<String> images = [];
+  bool isImageLoading = true;
+  bool isImageLoadFailed = false;
 
   @override
   void initState() {
@@ -198,6 +208,11 @@ class _DogImagesScreenState extends State<DogImagesScreen> {
       final message = data['message'];
       setState(() {
         images = List<String>.from(message);
+        isImageLoading = true; // Set the loading state to true
+      });
+    } else {
+      setState(() {
+        isImageLoadFailed = true; // Set the image load failed state to true
       });
     }
   }
@@ -210,7 +225,7 @@ class _DogImagesScreenState extends State<DogImagesScreen> {
       ),
       body: GridView.builder(
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
+          crossAxisCount: MediaQuery.of(context).size.width > 600 ? 4 : 2,
           crossAxisSpacing: 10,
           mainAxisSpacing: 10,
         ),
@@ -222,14 +237,23 @@ class _DogImagesScreenState extends State<DogImagesScreen> {
                 Image.network(
                   images[index],
                   fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Column(
+                      children: [
+                        Text('Failed to load image'),
+                        SizedBox(height: 10),
+                      ],
+                    );
+                  },
                 ),
                 SizedBox(height: 10),
-                ElevatedButton(
-                  onPressed: () {
-                    Share.share(images[index]);
-                  },
-                  child: Text('Share'),
-                ),
+                if (!isImageLoading && !isImageLoadFailed)
+                  ElevatedButton(
+                    onPressed: () {
+                      Share.share(images[index]);
+                    },
+                    child: Text('Share'),
+                  ),
               ],
             ),
           );
