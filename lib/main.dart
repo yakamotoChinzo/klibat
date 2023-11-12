@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:share/share.dart';
@@ -83,21 +84,14 @@ class _DogBreedsScreenState extends State<DogBreedsScreen> {
       body: Column(
         children: [
           Expanded(
-            child: GridView.builder(
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: MediaQuery.of(context).size.width > 600 ? 4 : 2,
-                crossAxisSpacing: 10,
-                mainAxisSpacing: 10,
-              ),
-              itemCount: filteredBreeds.length,
-              itemBuilder: (BuildContext context, int index) {
+            child: CarouselSlider(
+              items: filteredBreeds.map((breed) {
                 return GestureDetector(
                   onTap: () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) =>
-                            DogImagesScreen(breed: filteredBreeds[index]),
+                        builder: (context) => DogImagesScreen(breed: breed),
                       ),
                     );
                   },
@@ -105,23 +99,38 @@ class _DogBreedsScreenState extends State<DogBreedsScreen> {
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                    child: Stack(
                       children: [
-                        buildDogImageWidget(filteredBreeds[index]),
-                        SizedBox(height: 10),
-                        Text(
-                          filteredBreeds[index],
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
+                        buildDogImageWidget(breed),
+                        Positioned(
+                          top: 10,
+                          left: 10,
+                          child: Text(
+                            breed,
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
                           ),
                         ),
                       ],
                     ),
                   ),
                 );
-              },
+              }).toList(),
+              options: CarouselOptions(
+                aspectRatio: 16 / 16,
+                // Adjust the aspect ratio to control the size of each item
+                enlargeCenterPage: true,
+                // Enable to make the current item larger
+                enableInfiniteScroll: true,
+                // Enable to loop through the items infinitely
+                autoPlay: true,
+                // Enable to automatically scroll through the items
+                autoPlayInterval: Duration(
+                    seconds: 5), // Adjust the interval between auto-scrolls
+              ),
             ),
           ),
         ],
@@ -143,15 +152,15 @@ class _DogBreedsScreenState extends State<DogBreedsScreen> {
           if (images.isNotEmpty) {
             return Image.network(
               images[0],
-              width: 200,
-              height: 200,
-              fit: BoxFit.cover,
+              width: 400,
+              height: 400,
+              fit: BoxFit.fill,
               errorBuilder: (context, error, stackTrace) {
                 return Image.network(
                   images[images.length - 1],
-                  width: 200,
-                  height: 200,
-                  fit: BoxFit.cover,
+                  width: 400,
+                  height: 400,
+                  fit: BoxFit.fill,
                   errorBuilder: (context, error, stackTrace) {
                     return Text('Failed to load image');
                   },
@@ -161,9 +170,9 @@ class _DogBreedsScreenState extends State<DogBreedsScreen> {
           }
           return Image.network(
             images[0],
-            width: 200,
-            height: 200,
-            fit: BoxFit.cover,
+            width: 400,
+            height: 400,
+            fit: BoxFit.fill,
             errorBuilder: (context, error, stackTrace) {
               return Text('Failed to load image');
             },
@@ -227,26 +236,22 @@ class _DogImagesScreenState extends State<DogImagesScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Dog Images - ${widget.breed}'),
+        title: Text('${widget.breed} Images'),
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: GridView.builder(
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: MediaQuery.of(context).size.width > 600 ? 4 : 2,
-                crossAxisSpacing: 10,
-                mainAxisSpacing: 10,
-              ),
-              itemCount: images.length,
-              itemBuilder: (BuildContext context, int index) {
-                return SingleChildScrollView(
+      body: Center(
+        child: CarouselSlider.builder(
+          itemCount: images.length,
+          itemBuilder: (BuildContext context, int index, int realIndex) {
+            return Stack(
+              children: [
+                SingleChildScrollView(
                   child: Column(
                     children: [
                       Image.network(
                         images[index],
-                        fit: BoxFit
-                            .contain, // Set the fit property to BoxFit.contain
+                        width: 400,
+                        height: 400,
+                        fit: BoxFit.fill,
                         errorBuilder: (context, error, stackTrace) {
                           return Column(
                             children: [
@@ -257,20 +262,34 @@ class _DogImagesScreenState extends State<DogImagesScreen> {
                         },
                       ),
                       SizedBox(height: 10),
-                      if (isImageLoading && !isImageLoadFailed)
-                        ElevatedButton(
-                          onPressed: () {
-                            Share.share(images[index]);
-                          },
-                          child: Text('Share'),
-                        ),
                     ],
                   ),
-                );
-              },
-            ),
+                ),
+                Positioned.fill(
+                  child: Align(
+                    alignment: Alignment.bottomCenter,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Share.share(images[index]);
+                      },
+                      child: Text('Share'),
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
+          options: CarouselOptions(
+            aspectRatio: 16 / 18,
+            // Adjust the aspect ratio to control the size of each item
+            enlargeCenterPage: true,
+            // Enable to make the current item larger
+            enableInfiniteScroll: true,
+            // Enable to loop through the items infinitely
+            autoPlay: true,
+            // Disable auto-scrolling
           ),
-        ],
+        ),
       ),
     );
   }
