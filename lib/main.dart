@@ -4,7 +4,7 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:share/share.dart';
-
+import 'package:intl/intl.dart';
 void main() {
   runApp(MyApp());
 }
@@ -81,8 +81,8 @@ class _DogBreedsScreenState extends State<DogBreedsScreen> {
           style: TextStyle(color: Colors.white),
         ),
       ),
-      body: Column(
-        children: [
+      body: Center(
+        child:
           Expanded(
             child: CarouselSlider(
               items: filteredBreeds.map((breed) {
@@ -102,15 +102,17 @@ class _DogBreedsScreenState extends State<DogBreedsScreen> {
                     child: Stack(
                       children: [
                         buildDogImageWidget(breed),
-                        Positioned(
-                          top: 10,
-                          left: 10,
-                          child: Text(
-                            breed,
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                        Positioned.fill(
+                          child: Align(
+                            alignment: Alignment.topCenter,
+                            child: Text(
+                              capitalize(breed),
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                backgroundColor: Colors.black38,
+                                color: Colors.white,
+                              ),
                             ),
                           ),
                         ),
@@ -133,11 +135,13 @@ class _DogBreedsScreenState extends State<DogBreedsScreen> {
               ),
             ),
           ),
-        ],
+
       ),
     );
   }
-
+  String capitalize(String text) {
+    return text.substring(0, 1).toUpperCase() + text.substring(1);
+  }
   Widget buildDogImageWidget(String breed) {
     return FutureBuilder<List<String>>(
       future: fetchDogImages(breed),
@@ -239,7 +243,9 @@ class _DogImagesScreenState extends State<DogImagesScreen> {
         title: Text('${widget.breed} Images'),
       ),
       body: Center(
-        child: CarouselSlider.builder(
+        child: images.isEmpty
+            ? Text('No images available')
+            : CarouselSlider.builder(
           itemCount: images.length,
           itemBuilder: (BuildContext context, int index, int realIndex) {
             return Stack(
@@ -280,17 +286,14 @@ class _DogImagesScreenState extends State<DogImagesScreen> {
             );
           },
           options: CarouselOptions(
-            aspectRatio: 16 / 18,
-            // Adjust the aspect ratio to control the size of each item
+            aspectRatio: 16 / 20,
             enlargeCenterPage: true,
-            // Enable to make the current item larger
             enableInfiniteScroll: true,
-            // Enable to loop through the items infinitely
             autoPlay: true,
-            // Disable auto-scrolling
           ),
         ),
       ),
     );
   }
+
 }
